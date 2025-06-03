@@ -1,25 +1,26 @@
 # Frontend Developer Test
-The Pet Lab Co. uses various tests to assess whether a candidate is best suited to the expectations of the role 
+
+The Pet Lab Co. uses various tests to assess whether a candidate is best suited to the expectations of the role
 advertised and the offer given.
 
-This test aims to demonstrate your technical skills in practice: that you can deliver a solution which implements a 
+This test aims to demonstrate your technical skills in practice: that you can deliver a solution which implements a
 scalable front-end architecture, which is easy to use, and that pays attention to the requirement details.
 
-
 # Instructions & Deliverables
-Please be mindful this skill challenge will test not only your coding but also your communication skillsets. We are 
+
+Please be mindful this skill challenge will test not only your coding but also your communication skillsets. We are
 proponents of planning and then execute, so please fill out the SOLUTION.md.
 
 1. Fork this repository to your account (https://help.github.com/articles/fork-a-repo/)
 2. Read these instructions carefully first before continuing with the practical test
 3. Read the Requirements / Story Definition and Conditions of Acceptance
 4. Identify and write at least 3 test cases (no code necessary; Gherkin or a written list will suffice)
-    - Demonstrate your understanding of the Conditions of Acceptance
-    - Identify any appropriate edge cases
+   - Demonstrate your understanding of the Conditions of Acceptance
+   - Identify any appropriate edge cases
 5. Implement the Story's functionality using the files in 'public' directory
-    - Develop a solution which demonstrates your skills and strengths
-    - You may add/change/modify any files in the project
-    - You may use Google or any other references for angular/bootstrap syntax
+   - Develop a solution which demonstrates your skills and strengths
+   - You may add/change/modify any files in the project
+   - You may use Google or any other references for angular/bootstrap syntax
 6. Describe how you can build a better "Product" for this coding task in SOLUTION.md and include your estimates
 7. When you are satisfied with your solution please submit a link to your own forked repo.
 
@@ -33,19 +34,18 @@ proponents of planning and then execute, so please fill out the SOLUTION.md.
 - We have not banned the use of third-party solutions, but make sure the majority of code represents you.
 - Make sure you utilise the API correctly, as if it was an external service. API docs are available [here](./API_DOCS.md)
 
-Requirements / Story Definitions
-================================
+# Requirements / Story Definitions
 
 ### Technical requirements:
 
-Develop an app, where products are retrieved from the API and where filters can be used to limit the results from the 
+Develop an app, where products are retrieved from the API and where filters can be used to limit the results from the
 API.
 
 ### Product Requirements:
 
 As user I want to list and filter products
 
-``` gherkin
+```gherkin
 WHEN I visit the product collection page
 THEN I expect to see filters sidebar
 AND I expect to see a table of products

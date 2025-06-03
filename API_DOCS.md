@@ -33,7 +33,6 @@ Use `_page` and optionally `_limit` to paginate returned data.
 
 In the `Link` header you'll get `first`, `prev`, `next` and `last` links.
 
-
 ```
 GET /products?_page=3
 GET /products?_page=2&_limit=20

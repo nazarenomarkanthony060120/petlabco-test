@@ -1,13 +1,11 @@
-SOLUTION
-========
+# SOLUTION
 
-Estimation
-----------
+## Estimation
+
 Estimated: n hours
 
 Spent: x hours
 
+## Solution
 
-Solution
---------
 Comments on your solution
