@@ -32,9 +32,9 @@ export const useProductStore = create<ProductState>((set) => ({
   sort: 'title',
   order: 'asc',
   setProducts: (products) => set({ products }),
-  setFilters: (filters) => set({ filters, page: 1 }), // Reset page when filters change
+  setFilters: (filters) => set({ filters, page: 1 }), 
   setPage: (page) => set({ page }),
-  setLimit: (limit) => set({ limit, page: 1 }), // Reset page when limit changes
+  setLimit: (limit) => set({ limit, page: 1 }), 
   setTotalCount: (totalCount) => set({ totalCount }),
   setSort: (sort) => set({ sort }),
   setOrder: (order) => set({ order }),
