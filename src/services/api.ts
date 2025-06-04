@@ -1,8 +1,6 @@
 import axios from 'axios'
 import { Product, ProductFilters } from '../types/product'
 
-const API_URL = 'http://localhost:3010'
-
 interface GetProductsParams extends ProductFilters {
   page?: number
   limit?: number
@@ -23,7 +21,7 @@ export const api = {
       page, 
       limit, 
       sort, 
-      order, 
+      order = 'asc', 
       _start, 
       _end, 
       price_gte,
@@ -33,49 +31,98 @@ export const api = {
       id_ne,
       ...filters 
     } = params
-    const queryParams = new URLSearchParams()
 
-    // Add pagination params
-    if (_start !== undefined) queryParams.append('_start', _start.toString())
-    if (_end !== undefined) queryParams.append('_end', _end.toString())
-    if (page && limit) {
+    // Fetch the mock data
+    const response = await axios.get<{ products: Product[] }>(`/mock/products.json`)
+    let products = [...response.data.products]
+
+    // Apply filters
+    if (filters.search) {
+      const searchTerm = filters.search.toLowerCase()
+      products = products.filter(product => 
+        product.title.toLowerCase().includes(searchTerm) ||
+        product.vendor.toLowerCase().includes(searchTerm) ||
+        product.tags.some(tag => tag.toLowerCase().includes(searchTerm))
+      )
+    }
+
+    if (filters.price !== undefined) {
+      products = products.filter(product => product.price <= filters.price!)
+    }
+
+    if (filters.subscription !== undefined) {
+      products = products.filter(product => product.subscription === filters.subscription)
+    }
+
+    if (filters.tags?.length) {
+      products = products.filter(product => 
+        filters.tags!.some(filterTag => 
+          product.tags.some(productTag => 
+            productTag.toLowerCase().includes(filterTag.toLowerCase())
+          )
+        )
+      )
+    }
+
+    // Apply additional filter params
+    if (price_gte !== undefined) {
+      products = products.filter(product => product.price >= price_gte)
+    }
+
+    if (price_lte !== undefined) {
+      products = products.filter(product => product.price <= price_lte)
+    }
+
+    if (title_like) {
+      products = products.filter(product => 
+        product.title.toLowerCase().includes(title_like.toLowerCase())
+      )
+    }
+
+    if (vendor_like) {
+      products = products.filter(product => 
+        product.vendor.toLowerCase().includes(vendor_like.toLowerCase())
+      )
+    }
+
+    if (id_ne !== undefined) {
+      products = products.filter(product => product.id !== id_ne)
+    }
+
+    // Apply sorting
+    if (sort) {
+      products.sort((a, b) => {
+        let aValue: any = a[sort as keyof Product]
+        let bValue: any = b[sort as keyof Product]
+
+        // Handle different data types
+        if (typeof aValue === 'string') {
+          aValue = aValue.toLowerCase()
+          bValue = bValue.toLowerCase()
+        }
+
+        if (aValue < bValue) return order === 'asc' ? -1 : 1
+        if (aValue > bValue) return order === 'asc' ? 1 : -1
+        return 0
+      })
+    }
+
+    const totalCount = products.length
+
+    // Apply pagination
+    let paginatedProducts = products
+    
+    if (_start !== undefined && _end !== undefined) {
+      paginatedProducts = products.slice(_start, _end)
+    } else if (page && limit) {
       const start = (page - 1) * limit
       const end = start + limit
-      queryParams.append('_start', start.toString())
-      queryParams.append('_end', end.toString())
+      paginatedProducts = products.slice(start, end)
     }
 
-    // Add sorting params
-    if (sort) {
-      queryParams.append('_sort', sort)
-      queryParams.append('_order', order || 'asc')
-    }
-
-    // Add range operators
-    if (price_gte !== undefined) queryParams.append('price_gte', price_gte.toString())
-    if (price_lte !== undefined) queryParams.append('price_lte', price_lte.toString())
-
-    // Add like operators
-    if (title_like) queryParams.append('title_like', title_like)
-    if (vendor_like) queryParams.append('vendor_like', vendor_like)
-
-    // Add not equal operator
-    if (id_ne !== undefined) queryParams.append('id_ne', id_ne.toString())
-
-    // Add filter params
-    if (filters.search) queryParams.append('q', filters.search)
-    if (filters.price) queryParams.append('price_lte', filters.price.toString())
-    if (filters.subscription !== undefined) queryParams.append('subscription', filters.subscription.toString())
-    if (filters.tags?.length) {
-      filters.tags.forEach(tag => queryParams.append('tags_like', tag))
-    }
-
-    const response = await axios.get<Product[]>(`${API_URL}/products`, {
-      params: queryParams,
-    })
     return {
-      data: response.data,
-      totalCount: parseInt(response.headers['x-total-count'] || '0', 10)
+      data: paginatedProducts,
+      totalCount
     }
   }
 }
