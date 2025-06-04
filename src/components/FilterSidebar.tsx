@@ -39,10 +39,21 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
         ? [...currentTags, tag]
         : currentTags.filter((t) => t !== tag)
       setFormFilters((prev) => ({ ...prev, tags: newTags }))
+    } else if (name === 'subscription') {
+      // Handle subscription radio buttons
+      let subscriptionValue: boolean | undefined
+      if (value === '') {
+        subscriptionValue = undefined
+      } else if (value === 'true') {
+        subscriptionValue = true
+      } else if (value === 'false') {
+        subscriptionValue = false
+      }
+      setFormFilters((prev) => ({ ...prev, subscription: subscriptionValue }))
     } else {
       setFormFilters((prev) => ({
         ...prev,
-        [name]: value === '' ? undefined : value,
+        [name]: value === '' ? undefined : type === 'number' ? Number(value) : value,
       }))
     }
   }
@@ -53,7 +64,7 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
   }
 
   const handleClearAll = () => {
-    const clearedFilters = {
+    const clearedFilters: ProductFilters = {
       search: '',
       price: undefined,
       subscription: undefined,
@@ -140,20 +151,41 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
               <span>Subscription Status</span>
             </div>
           </label>
-          <select
-            name="subscription"
-            value={
-              formFilters.subscription === undefined
-                ? ''
-                : formFilters.subscription.toString()
-            }
-            onChange={handleInputChange}
-            className="w-full px-4 py-2.5 rounded-lg border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all bg-gray-50/50"
-          >
-            <option value="">All Products</option>
-            <option value="true">Subscription Available</option>
-            <option value="false">No Subscription</option>
-          </select>
+          <div className="space-y-2">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="radio"
+                name="subscription"
+                value=""
+                checked={formFilters.subscription === undefined}
+                onChange={handleInputChange}
+                className="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+              />
+              <span className="text-sm text-gray-700">All Products</span>
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="radio"
+                name="subscription"
+                value="true"
+                checked={formFilters.subscription === true}
+                onChange={handleInputChange}
+                className="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+              />
+              <span className="text-sm text-gray-700">Yes</span>
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="radio"
+                name="subscription"
+                value="false"
+                checked={formFilters.subscription === false}
+                onChange={handleInputChange}
+                className="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+              />
+              <span className="text-sm text-gray-700">No</span>
+            </label>
+          </div>
         </div>
 
         <div className="space-y-1">
