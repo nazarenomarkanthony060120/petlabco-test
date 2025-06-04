@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { Product } from '../types/product'
 import { ProductModal } from './ProductModal'
 import { ChevronUpIcon, ChevronDownIcon } from '@heroicons/react/24/outline'
@@ -10,12 +10,12 @@ interface ProductTableProps {
   onSort?: (field: string) => void
 }
 
-export const ProductTable: React.FC<ProductTableProps> = ({
+export const ProductTable = ({
   products,
   sort,
   order,
   onSort,
-}) => {
+}: ProductTableProps) => {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
 
   const handleSort = (field: string) => {

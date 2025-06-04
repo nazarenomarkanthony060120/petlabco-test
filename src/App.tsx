@@ -5,7 +5,7 @@ import { BrowserRouter } from 'react-router-dom'
 
 const queryClient = new QueryClient()
 
-const App: React.FC = () => {
+const App = () => {
   return (
     <BrowserRouter>
       <QueryClientProvider client={queryClient}>

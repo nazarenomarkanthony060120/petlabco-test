@@ -1,4 +1,3 @@
-import React from 'react'
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline'
 
 interface PaginationProps {
@@ -8,12 +7,12 @@ interface PaginationProps {
   onPageChange: (page: number) => void
 }
 
-export const Pagination: React.FC<PaginationProps> = ({
+export const Pagination = ({
   currentPage,
   totalItems,
   itemsPerPage,
   onPageChange,
-}) => {
+}: PaginationProps) => {
   const totalPages = Math.ceil(totalItems / itemsPerPage)
   const pages = Array.from({ length: totalPages }, (_, i) => i + 1)
 
@@ -94,4 +93,4 @@ export const Pagination: React.FC<PaginationProps> = ({
       </div>
     </div>
   )
-} 
+}
