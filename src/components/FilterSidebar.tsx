@@ -89,7 +89,7 @@ export const FilterSidebar = ({
             <button
               type="button"
               onClick={handleClearAll}
-              className="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1.5 px-3 py-1.5 rounded-md hover:bg-blue-50 transition-colors"
+              className="text-sm text-red-600 hover:text-red-700 flex items-center gap-1.5 px-3 py-1.5 rounded-md hover:bg-red-50 transition-colors"
             >
               <XMarkIcon className="h-4 w-4" />
               Clear all
