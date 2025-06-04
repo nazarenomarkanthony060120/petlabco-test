@@ -16,7 +16,7 @@ Spent: 12 hours
    - Spend extra 1 hour and 30 minutes enhancing the Filters design
    - Spend extra 30 minutes enhancing the View Products Modal design
    - Spend extra 2 hours and 30 minutes fixing bugs
-   - Spend extra 2 hours implementing URL synchronization and React Router setup
+   - Spend extra 1 hour and 30 minutes implementing URL synchronization and React Router setup
 
 2. **Product Listing**
    - Implemented product table with pagination
@@ -70,7 +70,7 @@ Spent: 12 hours
 ### Technical Decisions
 
 1. **State Management**
-   - Used local state with URL synchronization instead of Zustand
+   - Used local state with URL synchronization
    - Used React Query for server state
    - URL serves as single source of truth for filter state
    - Proper type definitions for all data structures
