@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { ProductFilters } from '../types/product'
+import { parseBooleanParam } from '../utils'
 import {
   MagnifyingGlassIcon,
   TagIcon,
@@ -21,7 +22,6 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
 }) => {
   const [formFilters, setFormFilters] = useState<ProductFilters>(filters)
 
-  // Update form filters when props change
   useEffect(() => {
     setFormFilters(filters)
   }, [filters])
@@ -40,20 +40,13 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
         : currentTags.filter((t) => t !== tag)
       setFormFilters((prev) => ({ ...prev, tags: newTags }))
     } else if (name === 'subscription') {
-      // Handle subscription radio buttons
-      let subscriptionValue: boolean | undefined
-      if (value === '') {
-        subscriptionValue = undefined
-      } else if (value === 'true') {
-        subscriptionValue = true
-      } else if (value === 'false') {
-        subscriptionValue = false
-      }
+      const subscriptionValue = parseBooleanParam(value)
       setFormFilters((prev) => ({ ...prev, subscription: subscriptionValue }))
     } else {
       setFormFilters((prev) => ({
         ...prev,
-        [name]: value === '' ? undefined : type === 'number' ? Number(value) : value,
+        [name]:
+          value === '' ? undefined : type === 'number' ? Number(value) : value,
       }))
     }
   }

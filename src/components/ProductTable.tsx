@@ -1,12 +1,7 @@
 import React, { useState } from 'react'
 import { Product } from '../types/product'
 import { ProductModal } from './ProductModal'
-import {
-  CheckCircleIcon,
-  XCircleIcon,
-  ChevronUpIcon,
-  ChevronDownIcon,
-} from '@heroicons/react/24/outline'
+import { ChevronUpIcon, ChevronDownIcon } from '@heroicons/react/24/outline'
 
 interface ProductTableProps {
   products: Product[]
