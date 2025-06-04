@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect, ChangeEvent, FormEvent } from 'react'
 import { ProductFilters } from '../types/product'
 import { parseBooleanParam } from '../utils'
 import {
@@ -16,10 +16,10 @@ interface FilterSidebarProps {
   onFilterChange: (filters: ProductFilters) => void
 }
 
-export const FilterSidebar: React.FC<FilterSidebarProps> = ({
+export const FilterSidebar = ({
   filters,
   onFilterChange,
-}) => {
+}: FilterSidebarProps) => {
   const [formFilters, setFormFilters] = useState<ProductFilters>(filters)
 
   useEffect(() => {
@@ -27,7 +27,7 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
   }, [filters])
 
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+    e: ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
     const { name, value, type } = e.target
 
@@ -51,7 +51,7 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
     }
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault()
     onFilterChange(formFilters)
   }
@@ -89,7 +89,7 @@ export const FilterSidebar: React.FC<FilterSidebarProps> = ({
             <button
               type="button"
               onClick={handleClearAll}
-              className="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1.5 px-3 py-1.5 rounded-md hover:bg-blue-50 transition-colors"
+              className="text-sm text-red-600 hover:text-red-700 flex items-center gap-1.5 px-3 py-1.5 rounded-md hover:bg-red-50 transition-colors"
             >
               <XMarkIcon className="h-4 w-4" />
               Clear all
