@@ -4,12 +4,10 @@ import { Product, ProductFilters } from '../types/product'
 const API_URL = 'http://localhost:3010'
 
 interface GetProductsParams extends ProductFilters {
-  page?: number
-  limit?: number
-  sort?: string
-  order?: 'asc' | 'desc'
   _start?: number
   _end?: number
+  _sort?: string
+  _order?: 'asc' | 'desc'
   price_gte?: number
   price_lte?: number
   title_like?: string
@@ -19,55 +17,34 @@ interface GetProductsParams extends ProductFilters {
 
 export const api = {
   async getProducts(params: GetProductsParams = {}): Promise<{ data: Product[], totalCount: number }> {
-    const { 
-      page, 
-      limit, 
-      sort, 
-      order, 
-      _start, 
-      _end, 
-      price_gte,
-      price_lte,
-      title_like,
-      vendor_like,
-      id_ne,
-      ...filters 
+    const {
+      search,
+      price,
+      subscription,
+      tags,
+      _start,
+      _end,
+      _sort,
+      _order,
     } = params
     const queryParams = new URLSearchParams()
 
-    // Add pagination params
+    // Pagination
     if (_start !== undefined) queryParams.append('_start', _start.toString())
     if (_end !== undefined) queryParams.append('_end', _end.toString())
-    if (page && limit) {
-      const start = (page - 1) * limit
-      const end = start + limit
-      queryParams.append('_start', start.toString())
-      queryParams.append('_end', end.toString())
+
+    // Sorting
+    if (_sort) {
+      queryParams.append('_sort', _sort)
+      queryParams.append('_order', _order || 'asc')
     }
 
-    // Add sorting params
-    if (sort) {
-      queryParams.append('_sort', sort)
-      queryParams.append('_order', order || 'asc')
-    }
-
-    // Add range operators
-    if (price_gte !== undefined) queryParams.append('price_gte', price_gte.toString())
-    if (price_lte !== undefined) queryParams.append('price_lte', price_lte.toString())
-
-    // Add like operators
-    if (title_like) queryParams.append('title_like', title_like)
-    if (vendor_like) queryParams.append('vendor_like', vendor_like)
-
-    // Add not equal operator
-    if (id_ne !== undefined) queryParams.append('id_ne', id_ne.toString())
-
-    // Add filter params
-    if (filters.search) queryParams.append('q', filters.search)
-    if (filters.price) queryParams.append('price_lte', filters.price.toString())
-    if (filters.subscription !== undefined) queryParams.append('subscription', filters.subscription.toString())
-    if (filters.tags?.length) {
-      filters.tags.forEach(tag => queryParams.append('tags_like', tag))
+    // Filtering
+    if (search) queryParams.append('q', search)
+    if (price !== undefined) queryParams.append('price_lte', price.toString())
+    if (subscription !== undefined) queryParams.append('subscription', subscription.toString())
+    if (tags?.length) {
+      tags.forEach(tag => queryParams.append('tags_like', tag))
     }
 
     const response = await axios.get<Product[]>(`${API_URL}/products`, {

@@ -8,7 +8,6 @@ import {
   CheckCircleIcon,
   XMarkIcon,
   AdjustmentsHorizontalIcon,
-  FunnelIcon,
 } from '@heroicons/react/24/outline'
 
 interface FilterSidebarProps {
@@ -21,15 +20,27 @@ export const FilterSidebar = ({
   onFilterChange,
 }: FilterSidebarProps) => {
   const [formFilters, setFormFilters] = useState<ProductFilters>(filters)
+  const [searchDebounceTimeout, setSearchDebounceTimeout] =
+    useState<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
     setFormFilters(filters)
   }, [filters])
 
+  useEffect(() => {
+    return () => {
+      if (searchDebounceTimeout) {
+        clearTimeout(searchDebounceTimeout)
+      }
+    }
+  }, [searchDebounceTimeout])
+
   const handleInputChange = (
     e: ChangeEvent<HTMLInputElement | HTMLSelectElement>,
   ) => {
     const { name, value, type } = e.target
+
+    let newFilters = { ...formFilters }
 
     if (type === 'checkbox') {
       const checkbox = e.target as HTMLInputElement
@@ -38,16 +49,32 @@ export const FilterSidebar = ({
       const newTags = checkbox.checked
         ? [...currentTags, tag]
         : currentTags.filter((t) => t !== tag)
-      setFormFilters((prev) => ({ ...prev, tags: newTags }))
+      newFilters = { ...newFilters, tags: newTags }
     } else if (name === 'subscription') {
       const subscriptionValue = parseBooleanParam(value)
-      setFormFilters((prev) => ({ ...prev, subscription: subscriptionValue }))
+      newFilters = { ...newFilters, subscription: subscriptionValue }
     } else {
-      setFormFilters((prev) => ({
-        ...prev,
+      newFilters = {
+        ...newFilters,
         [name]:
           value === '' ? undefined : type === 'number' ? Number(value) : value,
-      }))
+      }
+    }
+
+    setFormFilters(newFilters)
+
+    if (name === 'search') {
+      if (searchDebounceTimeout) {
+        clearTimeout(searchDebounceTimeout)
+      }
+
+      const timeout = setTimeout(() => {
+        onFilterChange(newFilters)
+      }, 300)
+
+      setSearchDebounceTimeout(timeout)
+    } else {
+      onFilterChange(newFilters)
     }
   }
 
@@ -209,14 +236,6 @@ export const FilterSidebar = ({
             ))}
           </div>
         </div>
-
-        <button
-          type="submit"
-          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-        >
-          <FunnelIcon className="h-5 w-5" />
-          Apply Filters
-        </button>
       </div>
     </form>
   )

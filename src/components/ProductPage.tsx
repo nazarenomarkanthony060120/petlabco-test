@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useSearchParams } from 'react-router-dom'
 import { ProductTable } from './ProductTable'
@@ -8,8 +8,27 @@ import { LoadingSpinner } from './LoadingSpinner'
 import { useProductStore } from '../store/productStore'
 import { api } from '../services/api'
 import { Pagination } from './Pagination'
-import { ProductFilters } from '../types/product'
+import { Product, ProductFilters } from '../types/product'
 import { parseBooleanParam, parseNumberParam } from '../utils'
+
+const getInitialFiltersFromUrl = (
+  searchParams: URLSearchParams,
+): ProductFilters => {
+  const initialFilters: ProductFilters = {}
+  const searchParam = searchParams.get('search')
+  if (searchParam) initialFilters.search = searchParam
+
+  const priceParam = parseNumberParam(searchParams.get('price'))
+  if (priceParam) initialFilters.price = priceParam
+
+  const subscriptionParam = parseBooleanParam(searchParams.get('subscription'))
+  if (subscriptionParam !== undefined)
+    initialFilters.subscription = subscriptionParam
+
+  const tagsParams = searchParams.getAll('tags')
+  if (tagsParams.length > 0) initialFilters.tags = tagsParams
+  return initialFilters
+}
 
 export const ProductPage = () => {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -34,47 +53,34 @@ export const ProductPage = () => {
     if (isInitialMount.current && searchParams.toString()) {
       isInitialMount.current = false
 
-      const initialFilters: ProductFilters = {}
-
-      const searchParam = searchParams.get('search')
-      if (searchParam) initialFilters.search = searchParam
-
-      const priceParam = parseNumberParam(searchParams.get('price'))
-      if (priceParam) initialFilters.price = priceParam
-
-      const subscriptionParam = parseBooleanParam(searchParams.get('subscription'))
-      if (subscriptionParam !== undefined) initialFilters.subscription = subscriptionParam
-
-      const tagsParams = searchParams.getAll('tags')
-      if (tagsParams.length > 0) initialFilters.tags = tagsParams
-
+      const initialFilters = getInitialFiltersFromUrl(searchParams)
       if (Object.keys(initialFilters).length > 0) {
         setFilters(initialFilters)
       }
 
       const pageParam = parseNumberParam(searchParams.get('page'), 1)
-      if (pageParam && pageParam > 1) {
+      if (pageParam && pageParam !== useProductStore.getState().page) {
         useProductStore.getState().setPage(pageParam)
       }
 
       const limitParam = parseNumberParam(searchParams.get('limit'), 10)
-      if (limitParam && limitParam !== 10) {
+      if (limitParam && limitParam !== useProductStore.getState().limit) {
         setLimit(limitParam)
       }
 
       const sortParam = searchParams.get('sort')
-      if (sortParam && sortParam !== 'title') {
+      if (sortParam && sortParam !== useProductStore.getState().sort) {
         setSort(sortParam)
       }
 
       const orderParam = searchParams.get('order') as 'asc' | 'desc'
-      if (orderParam && orderParam !== 'asc') {
+      if (orderParam && orderParam !== useProductStore.getState().order) {
         setOrder(orderParam)
       }
     } else if (isInitialMount.current) {
       isInitialMount.current = false
     }
-  }, [searchParams, setFilters, setSort, setOrder, setLimit])
+  }, [searchParams, setFilters, setLimit, setOrder, setSort])
 
   const updateUrlParams = (
     newFilters: ProductFilters,
@@ -100,12 +106,12 @@ export const ProductPage = () => {
 
   const handleFilterChange = (newFilters: ProductFilters) => {
     setFilters(newFilters)
-    updateUrlParams(newFilters)
+    updateUrlParams(newFilters, page, sort, order, limit)
   }
 
   const handlePageChange = (newPage: number) => {
     useProductStore.getState().setPage(newPage)
-    updateUrlParams(filters, newPage)
+    updateUrlParams(filters, newPage, sort, order, limit)
   }
 
   const handleItemsPerPageChange = (newLimit: number) => {
@@ -119,35 +125,68 @@ export const ProductPage = () => {
       sort === newSort ? (order === 'asc' ? 'desc' : 'asc') : 'asc'
     setSort(newSort)
     setOrder(newOrder)
-    updateUrlParams(filters, page, newSort, newOrder)
+    updateUrlParams(filters, page, newSort, newOrder, limit)
   }
 
-  const { data, isLoading } = useQuery({
-    queryKey: ['products', filters, page, limit, sort, order],
+  const { data: fetchedProductsData, isLoading } = useQuery<Product[], Error>({
+    queryKey: ['products', page, limit, sort, order],
     queryFn: async () => {
       const start = (page - 1) * limit
       const end = start + limit
       const response = await api.getProducts({
-        ...filters,
         _start: start,
         _end: end,
-        sort,
-        order,
+        _sort: sort,
+        _order: order,
       })
       setTotalCount(response.totalCount)
       return response.data
     },
   })
 
-  const products = data || []
+  const fetchedProducts: Product[] = fetchedProductsData || []
 
   useEffect(() => {
-    if (products.length > 0) {
-      setProducts(products)
+    if (fetchedProductsData) {
+      setProducts(fetchedProducts)
+    } else if (!isLoading && !fetchedProductsData) {
+      setProducts([])
     }
-  }, [products, setProducts])
+  }, [fetchedProductsData, isLoading, setProducts])
 
-  if (isLoading && !products.length) {
+  const productsToDisplay = useMemo(() => {
+    let tempProducts = [...fetchedProducts]
+
+    if (filters.search && filters.search.trim() !== '') {
+      const searchTerm = filters.search.toLowerCase()
+      tempProducts = tempProducts.filter(
+        (product) =>
+          product.title.toLowerCase().includes(searchTerm) ||
+          (product.vendor && product.vendor.toLowerCase().includes(searchTerm)),
+      )
+    }
+
+    if (filters.price !== undefined) {
+      tempProducts = tempProducts.filter(
+        (product) => product.price <= filters.price!,
+      )
+    }
+
+    if (filters.subscription !== undefined) {
+      tempProducts = tempProducts.filter(
+        (product) => product.subscription === filters.subscription,
+      )
+    }
+
+    if (filters.tags && filters.tags.length > 0) {
+      tempProducts = tempProducts.filter((product) =>
+        filters.tags!.some((tag) => product.tags.includes(tag)),
+      )
+    }
+    return tempProducts
+  }, [fetchedProducts, filters])
+
+  if (isLoading && fetchedProducts.length === 0) {
     return <LoadingSpinner />
   }
 
@@ -197,7 +236,7 @@ export const ProductPage = () => {
               </div>
               <div className="overflow-x-auto">
                 <ProductTable
-                  products={products}
+                  products={productsToDisplay}
                   sort={sort}
                   order={order}
                   onSort={handleSort}
