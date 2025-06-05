@@ -231,7 +231,7 @@ export const ProductPage = () => {
                   </div>
                 </div>
                 <span className="text-sm text-gray-500">
-                  {totalCount} products found
+                  {productsToDisplay.length} products found
                 </span>
               </div>
               <div className="overflow-x-auto">
